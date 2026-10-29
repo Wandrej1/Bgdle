@@ -1,0 +1,6 @@
+{
+  "name": "Brettspieldle - Das Brettspiel-Quiz",
+  "description": "Errate das geheime Brettspiel im Pokédle- und LoLdle-Stil aus der kompletten BGG Top 1000 und legendären Kultklassikern (Catan, Carcassonne u. v. m.). Vergleiche Spieleranzahl, Spieldauer, Genre, Designer, Mechaniken, Jahr und BGG-Rang.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

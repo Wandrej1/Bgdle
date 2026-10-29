@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-display: 'Outfit', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0d131a;
+    color: #f1f5f9;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* 3D Flip animation for Pokédle card reveals */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+@keyframes cardFlip {
+  0% {
+    transform: rotateX(90deg) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-card-reveal {
+  animation: cardFlip 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tabletop background */
+.bg-tabletop {
+  background-color: #0b1118;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 10% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+    linear-gradient(to bottom, #0f172a 0%, #090d14 100%);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
