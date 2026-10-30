@@ -10,13 +10,21 @@ interface HintsPanelProps {
 }
 
 /**
- * Remove any inadvertent title / franchise / author spoilers from hint text
+ * Remove any inadvertent title / franchise / author spoilers or BGG rank/rating clues from hint text
  */
 function sanitizeSpoilerHint(text: string, game: BoardGame): string {
   if (!text) return '';
   let sanitized = text;
 
-  // Collect potential spoiler terms (game title, original title, designer names)
+  // 1. Strictly remove any references to BGG, BoardGameGeek, rankings, ratings, or rank numbers
+  sanitized = sanitized
+    .replace(/\b(BGG|BoardGameGeek)\b/gi, '')
+    .replace(/\bTop\s*\d+\b/gi, '')
+    .replace(/#\d+/g, '')
+    .replace(/\b(Rang|Rank|Rating|Platzierung|Platz)\s*(\d+|\b)/gi, '')
+    .replace(/\b(geek\s*rating|average\s*rating)\b/gi, '');
+
+  // 2. Collect potential spoiler terms (game title, original title, designer names)
   const blacklist = [game.title, game.originalTitle, game.designer].filter(Boolean) as string[];
 
   for (const item of blacklist) {
@@ -36,9 +44,21 @@ function sanitizeSpoilerHint(text: string, game: BoardGame): string {
     }
   }
 
-  // Clean double replacements
-  sanitized = sanitized.replace(/(\[\.\.\.\]\s*)+/g, '[dieses Spiel] ');
-  return sanitized.trim();
+  // Clean double replacements and extra punctuation
+  sanitized = sanitized
+    .replace(/(\[\.\.\.\]\s*)+/g, '[dieses Spiel] ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // If text became trivial or was just a rank placeholder, generate a clean thematic game idea
+  if (sanitized.length < 20 || sanitized === '[dieses Spiel]' || /^([.,\-\s]|spiel)*$/i.test(sanitized)) {
+    const playerCount = game.minPlayers === game.maxPlayers
+      ? `${game.minPlayers} Spieler`
+      : `${game.minPlayers}–${game.maxPlayers} Spieler`;
+    return `Ein packendes ${game.genre}-Spiel mit den Kernelementen ${game.mechanic1} und ${game.mechanic2} für ${playerCount}.`;
+  }
+
+  return sanitized;
 }
 
 function escapeRegExp(str: string): string {
@@ -69,7 +89,7 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({
   // Hint 1: Award information if available, otherwise a primary game mechanic (Never BGG rank)
   const hasAwards = Boolean(targetGame.awards && targetGame.awards.trim().length > 0);
   const cleanAwards = targetGame.awards
-    ? targetGame.awards.replace(/BGG\s*(Rank|Rang)?\s*#?\d+/gi, '').trim()
+    ? targetGame.awards.replace(/BGG\s*(Rank|Rang)?\s*#?\d+/gi, '').replace(/\bTop\s*\d+\b/gi, '').trim()
     : '';
 
   const fallbackMechanic =
@@ -83,10 +103,9 @@ export const HintsPanel: React.FC<HintsPanelProps> = ({
     ? cleanAwards
     : `Eine der zentralen Spielmechaniken dieses Spiels ist: "${fallbackMechanic}".`;
 
-  const cleanDescriptionHint = sanitizeSpoilerHint(
-    targetGame.clueMaterial || targetGame.description || 'Ein renommiertes Spiel dieser Kategorie.',
-    targetGame
-  );
+  // Hint 2: Purely thematic game idea and premise without any BGG rank or rating
+  const rawDesc = targetGame.clueMaterial || targetGame.description || '';
+  const cleanDescriptionHint = sanitizeSpoilerHint(rawDesc, targetGame);
 
   return (
     <div className="w-full max-w-xl mx-auto my-3 bg-slate-900/60 border border-slate-800 rounded-xl p-3 sm:p-4 shadow-lg">
